@@ -509,7 +509,8 @@ global.davlib = new function() {
 
     this.DavClient.prototype._generateUrl = function(path){
         /* convert a url from a path */
-        var url = this.protocol + '://' + this.host;
+    	var auth = ( (this.username && this.password)?(this.username+':'+this.password+'@'):("") );
+        var url = this.protocol + '://' + auth + this.host;
         if (this.port) {
             url += ':' + this.port;
         };
