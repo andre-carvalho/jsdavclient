@@ -1,5 +1,5 @@
 var client = new davlib.DavClient();
-client.initialize(location.hostname, 443, 'https', 'user', 'password');
+client.initialize('geometadata.dpi.inpe.br', 80, 'http', 'terrabrasilis', 'T3rr#bras1l1s');
 
 
 function writeToDiv(line, emphasize) {
@@ -73,7 +73,7 @@ function wrapContinueHandler(currname, handler, expected_status) {
     return wrapped;
 };
 
-var basedir = '/on/demandware.servlet/webdav/Sites/Cartridges/version2/';
+var basedir = '/webdav/';
 var folder1 = 'foo/';
 var folder2 = 'bar/';
 var file = 'bar.txt'
