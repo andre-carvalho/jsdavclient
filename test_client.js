@@ -1,5 +1,5 @@
 var client = new davlib.DavClient();
-client.initialize('geometadata.dpi.inpe.br', 80, 'http', 'terrabrasilis', 'T3rr#bras1l1s');
+client.initialize('geometadata.dpi.inpe.br', 80, 'http', 'webdav', 'T3rr4brasili5');
 
 
 function writeToDiv(line, emphasize) {
