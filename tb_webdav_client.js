@@ -15,77 +15,68 @@ function writeToDiv(line, emphasize) {
     div.appendChild(newdiv);
 };
 
-function assert(statement, debugprint) {
-    if (!statement) {
-        writeToDiv('FAILURE: ' + debugprint, 1);
-    } else {
-        writeToDiv('success');
+var getFileData=function(fileProp) {
+    var reader = new FileReader();
+    
+    reader.onload = function() {
+    	fileProp.content=this.result;
+    	fileProp.callback(fileProp);
     };
+    reader.readAsText(fileProp.file);
 };
 
-var getFileData=function(callback) {
+var getFileProperties=function(callback) {
 	var formFile = document.getElementById("metadatafile");
     var file = formFile.files[0];
     var ret={};
     ret.name=file.name;
     ret.size=file.size;
-    ret.callback=callback;
-    var reader = new FileReader();
-    
-    reader.onload = function() {
-    	ret.content=this.result;
-    	ret.callback(ret);
-    };
-    reader.readAsText(file);
+    ret.file=file;
+    return ret;
+};
+
+var fileExists=function(file, success, fail) {
+	var basedir = '/webdav/';
+	var fileName = file.name;
+	client.GET(basedir + fileName, wrapHandler(200, success, fail));
 };
 
 // since the lib is async I wrote the functions in the order
 // they are executed to give a bit of an overview
 function sendMetadataFile() {
 	
-	var fileData=getFileData(function(fileData){
-		var basedir = '/webdav/';
-		var file = fileData.name;
-		
-		client.PUT(basedir + file, fileData.content, wrapContinueHandler(201));
-	});
+	var fileProp=getFileProperties();
+	fileProp.remoteDir='/webdav/';
+	var sendFile=function() {
+		fileProp.callback=function(fileData) {
+			var file = fileData.remoteDir + fileData.name;
+			client.PUT(file, fileData.content, wrapHandler(201, function(){console.log('metadado enviado com sucesso.')}, function(){console.log('falhou no envio do metadado.')}));
+		};
+		getFileData(fileProp);
+	};
+	
+	var removeFile=function() {
+		if(confirm('This file was exists. Do you overwrite it?')) {
+			var file = fileProp.remoteDir + fileProp.name;
+			client.DELETE(file, wrapHandler(204, sendFile, function(){console.log('falhou na remocao do metadado.')}));
+		}
+	};
+	
+	fileExists(fileProp,
+			removeFile/*file exists, removing the file if confirm are yes*/,
+			sendFile/*file do not exists, sending the file*/
+	);
 };
 
-function wrapContinueHandler(expected_status) {
+function wrapHandler(expected_status, success_fn, fail_fn) {
     var wrapped = function(status, statusstr, content) {
-        writeToDiv('status: ' + status + ' (' + statusstr + ')');
-        if (content) {
-            writeToDiv('content: ' + content);
-        };
-        
-        // multistatus request
-        if (content && status == 207) {
 
-        	var parser, doc = null;
-        	if (window.DOMParser) {
-        	  parser = new DOMParser();
-        	  doc = parser.parseFromString(string.deentitize(content), "application/xml");
-       	    } else {  // Internet Explorer :-)
-       	    	doc = new ActiveXObject("Microsoft.XMLDOM");
-       	    	doc.loadXML(content);
-       	    }
-
-            writeToDiv('Files found:');
-            
-        	// list files
-        	for (i = 0; i< doc.getElementsByTagName("response").length; i++) {
-        		// property wrapper for IE (property "text") + Rest (property "textcontent")
-        		// alternative: use jquery for wrapping
-        		writeToDiv(doc.getElementsByTagName("response")[i].firstChild.textContent || doc.getElementsByTagName("response")[i].firstChild.text);
-        	}
-        };
-        
-        writeToDiv('Expected status: ' + expected_status);
+    	writeToDiv('Expected status: ' + expected_status);
         
         if (status == expected_status) {
-            writeToDiv('OK');
+        	success_fn();
         } else {
-            writeToDiv('FAILED', true);
+            fail_fn();
         };
         writeToDiv('--------------------');
     };
