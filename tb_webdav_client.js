@@ -29,11 +29,12 @@ var getFileData=function(callback) {
     var ret={};
     ret.name=file.name;
     ret.size=file.size;
+    ret.callback=callback;
     var reader = new FileReader();
     
-    reader.onload = function(callback) {
+    reader.onload = function() {
     	ret.content=this.result;
-    	callback(ret);
+    	ret.callback(ret);
     };
     reader.readAsText(file);
 };
