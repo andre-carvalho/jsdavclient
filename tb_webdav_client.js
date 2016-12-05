@@ -50,7 +50,7 @@ function sendMetadataFile() {
 	var sendFile=function() {
 		fileProp.callback=function(fileData) {
 			var file = fileData.remoteDir + fileData.name;
-			client.PUT(file, fileData.content, wrapHandler(201, function(){console.log('metadado enviado com sucesso.')}, function(){console.log('falhou no envio do metadado.')}));
+			client.PUT(file, fileData.content, wrapHandler(201, function(){writeToDiv('File was sent.');}, function(){writeToDiv('Fail on send the file.',true);}));
 		};
 		getFileData(fileProp);
 	};
@@ -58,7 +58,7 @@ function sendMetadataFile() {
 	var removeFile=function() {
 		if(confirm('This file was exists. Do you overwrite it?')) {
 			var file = fileProp.remoteDir + fileProp.name;
-			client.DELETE(file, wrapHandler(204, sendFile, function(){console.log('falhou na remocao do metadado.')}));
+			client.DELETE(file, wrapHandler(204, sendFile, function(){writeToDiv('Fail on remove old file.',true);}));
 		}
 	};
 	
@@ -70,16 +70,11 @@ function sendMetadataFile() {
 
 function wrapHandler(expected_status, success_fn, fail_fn) {
     var wrapped = function(status, statusstr, content) {
-
-    	writeToDiv('Expected status: ' + expected_status);
-        
-        if (status == expected_status) {
-        	success_fn();
+    	if (status == expected_status) {
+    		success_fn();
         } else {
             fail_fn();
         };
-        writeToDiv('--------------------');
     };
-    
     return wrapped;
 };
