@@ -26,20 +26,25 @@ function assert(statement, debugprint) {
 var getFileData=function() {
 	var formFile = document.getElementById("metadatafile");
     var file = formFile.files[0];
-
-    console.log("File name: " + file.name);
-    console.log("File size: " + file.size);
-    //console.log("Text content: " + file.getAsText(""));
+    var ret={};
+    ret.name=file.name;
+    ret.size=file.size;
+    var reader = new FileReader();
+    reader.onload = function() {
+      console.log(this.result);            
+    }
+    ret.content=reader.readAsText(file);
+    return ret;
 };
 
 // since the lib is async I wrote the functions in the order
 // they are executed to give a bit of an overview
 function sendMetadataFile() {
-	getFileData();
+	var fileData=getFileData();
 	var basedir = '/webdav/';
-	var file = 'bar.txt';
+	var file = fileData.name;
 	
-	client.PUT(basedir + file, 'foo', wrapContinueHandler(201));
+	client.PUT(basedir + file, fileData.content, wrapContinueHandler(201));
 };
 
 function wrapContinueHandler(expected_status) {
