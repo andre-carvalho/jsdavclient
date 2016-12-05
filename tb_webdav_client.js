@@ -27,9 +27,9 @@ var getFileData=function() {
 	var formFile = document.getElementById("metadatafile");
     var file = formFile.files[0];
 
-    console.log("File name: " + file.fileName);
-    console.log("File size: " + file.fileSize);
-    console.log("Text content: " + file.getAsText(""));
+    console.log("File name: " + file.name);
+    console.log("File size: " + file.size);
+    //console.log("Text content: " + file.getAsText(""));
 };
 
 // since the lib is async I wrote the functions in the order
