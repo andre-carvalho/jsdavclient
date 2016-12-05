@@ -41,16 +41,42 @@ var fileExists=function(file, success, fail) {
 	client.GET(basedir + fileName, wrapHandler(200, success, fail));
 };
 
+var updatecsw=function() {
+	var url="http://geometadata.dpi.inpe.br/cgi-bin/updatecsw.py";
+	var xmlhttp;
+	if (window.XMLHttpRequest) {
+		xmlhttp = new XMLHttpRequest();
+	} else {
+		// code for older browsers
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			eval(this.responseText);
+			if(response.status) {
+				writeToDiv('CSW was updated.');
+			}else{
+				writeToDiv('CSW update fail.',true);
+			}
+		}
+	};
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+};
+
 // since the lib is async I wrote the functions in the order
 // they are executed to give a bit of an overview
 function sendMetadataFile() {
+	
+	var div = document.getElementById('msgdiv');
+	div.innerHTML="";// clean messages
 	
 	var fileProp=getFileProperties();
 	fileProp.remoteDir='/webdav/';
 	var sendFile=function() {
 		fileProp.callback=function(fileData) {
 			var file = fileData.remoteDir + fileData.name;
-			client.PUT(file, fileData.content, wrapHandler(201, function(){writeToDiv('File was sent.');}, function(){writeToDiv('Fail on send the file.',true);}));
+			client.PUT(file, fileData.content, wrapHandler(201, function(){writeToDiv('File was sent.');updatecsw();}, function(){writeToDiv('Fail on send the file.',true);}));
 		};
 		getFileData(fileProp);
 	};
